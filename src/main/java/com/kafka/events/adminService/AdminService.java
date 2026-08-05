@@ -2,10 +2,12 @@ package com.kafka.events.adminService;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Properties;
 
+@Service
 public class AdminService {
 
         private final AdminClient adminClient;
