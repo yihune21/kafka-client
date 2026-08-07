@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: events
+  lifecycle:
+    # Give consumer containers time to drain and leave their group cleanly on shutdown.
+    timeout-per-shutdown-phase: 40s
+
+server:
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+  admin:
+    # Declared up front because the broker has auto-creation disabled. Dead-letter topics are
+    # derived from these automatically.
+    topics:
+      - name: events.demo
+        partitions: 3
+        configs:
+          retention.ms: "604800000"
+          cleanup.policy: delete
+
+  producer:
+    acks: all
+    idempotence: true
+    compression-type: lz4
+    linger: 20ms
+
+  consumer:
+    group-id: events-demo
+    auto-offset-reset: earliest
+    concurrency: 3
+    on-failure: dead-letter
+    retry:
+      max-attempts: 3
+      initial-backoff: 200ms
+      multiplier: 2.0
+      max-backoff: 2s
+
+demo:
+  enabled: true
+  topic: events.demo
+  messages: 10
+  poison-every: 7
+
+logging:
+  level:
+    com.kafka.events: INFO
